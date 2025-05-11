@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <title>Pasport Ərizəsi</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.7.0/docx.umd.min.js"></script>
+</head>
+<body>
+  <h2>Pasport Ərizə Forması</h2>
+  <form id="passportForm">
+    <label>Valideynin tam adı: <input type="text" id="parentName" required></label><br>
+    <label>Ünvan: <input type="text" id="address" required></label><br>
+    <label>Şəxsiyyət vəsiqəsi seriyası və nömrəsi: <input type="text" id="idNumber" required></label><br>
+    <label>Verilmə tarixi: <input type="text" id="issueDate" required></label><br>
+    <label>Verən orqan: <input type="text" id="issuer" required></label><br>
+    <label>Uşağın doğum tarixi: <input type="date" id="childBirthdate" required></label><br>
+    <label>Uşağın tam adı: <input type="text" id="childName" required></label><br>
+    <label>Tarix: <input type="date" id="currentDate" required></label><br><br>
+    <button type="button" onclick="generateDoc()">Ərizəni DOCX kimi yüklə</button>
+  </form>
+
+  <script>
+    async function generateDoc() {
+      const { Document, Packer, Paragraph, TextRun } = window.docx;
+
+      // Məlumatları al
+      const parentName = document.getElementById("parentName").value;
+      const address = document.getElementById("address").value;
+      const idNumber = document.getElementById("idNumber").value;
+      const issueDate = document.getElementById("issueDate").value;
+      const issuer = document.getElementById("issuer").value;
+      const childBirthdate = document.getElementById("childBirthdate").value;
+      const childName = document.getElementById("childName").value;
+      const currentDate = document.getElementById("currentDate").value;
+
+      const formattedChildDate = formatDate(childBirthdate);
+      const formattedCurrentDate = formatDate(currentDate);
+
+      const doc = new Document({
+        sections: [{
+          children: [
+            new Paragraph({
+              children: [
+                new TextRun("Azərbaycan Respublikası Daxili İşlər Nazirliyinin Baş Pasport, Qeydiyyat və Miqrasiya İdarəsinin rəisi"),
+              ],
+            }),
+            new Paragraph({
+              children: [new TextRun("polis polkovniki Cəmil Əmirova")],
+            }),
+            new Paragraph(""),
+            new Paragraph(""),
+            new Paragraph(address),
+            new Paragraph(`${parentName} /valideynin adı, ata adı və soyadı/`),
+            new Paragraph(`${idNumber} /şəxsiyyət vəsiqəsinin seriyası, nömrəsi/`),
+            new Paragraph(`${issueDate} /verilmə tarixi/`),
+            new Paragraph(`${issuer} /verən orqanın adı/`),
+            new Paragraph(""),
+            new Paragraph({ children: [new TextRun({ text: "Ə  R  I  Z  Ə", bold: true })] }),
+            new Paragraph(""),
+            new Paragraph(`Mən ${parentName} bildirirəm ki, ${formattedChildDate} il təvəllüdlü ${childName} ümumvətəndaş pasportu almasına etiraz etmirəm.`),
+            new Paragraph(""),
+            new Paragraph("İmza ______________________   İmza __________________"),
+            new Paragraph(`Tarix ${formattedCurrentDate} il.`),
+            new Paragraph(""),
+            new Paragraph("DİN-in məsul şəxsi:                    İmza _________________   Tarix _________________ il.")
+          ]
+        }]
+      });
+
+      const blob = await Packer.toBlob(doc);
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "pasport_erizesi.docx";
+      link.click();
+    }
+
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}.${month}.${year}`;
+    }
+  </script>
+</body>
+</html>
